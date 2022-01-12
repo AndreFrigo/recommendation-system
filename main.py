@@ -113,7 +113,8 @@ def compareTrials(trial1, condition2):
 
 # calculates Pearson correlation 
 # denominator1 is the partial denominator for the first element
-def pearsonCorrelation(el1, e2, denominator1=None):
+# returns a value in the interval [-1;+1]
+def pearsonCorrelation(el1, e2):
     #it is assumed that el1 is already normalized (for performance)
     #normalize the second 
     el2 = normalizePatient(e2)
@@ -133,7 +134,6 @@ def pearsonCorrelation(el1, e2, denominator1=None):
                     sim = compareTrials(trial[0], el2[condition])
                     print(sim)
                     if sim[0] != 0:
-                        # print("Something in common")
                         if condition in common:
                             common[condition].append(trial[0])
                         else:
@@ -143,17 +143,13 @@ def pearsonCorrelation(el1, e2, denominator1=None):
                         numerator += trial[1]*sim[1]*sim[0]
             #also the denominator is calculated considering ONLY common conditions
             #get the denumerator part for el1
-            if(denominator1 == None):
-                for trial in el1[condition]:
-                    if (trial[1] != None):
-                        partial += math.pow(trial[1], 2)
+            for trial in el1[condition]:
+                if (trial[1] != None):
+                    partial += math.pow(trial[1], 2)
     if (partial == 0):
         partial = 1
-    # print("Partial1 for el1: "+str(partial))
-    if(denominator1 == None):
-        denominator = denominator * math.sqrt(partial)
-    elif denominator1 != 0:
-        denominator = denominator * denominator1
+    denominator = denominator * math.sqrt(partial)
+
     #get the denominator part for el2
     partial = 0
     for condition in el2:
@@ -163,7 +159,6 @@ def pearsonCorrelation(el1, e2, denominator1=None):
                     partial += math.pow(trial[1], 2)
     if(partial == 0):
         partial = 1
-    # print("Partial1 for el2: "+str(partial))
     denominator = denominator * math.sqrt(partial)
     return numerator/denominator
     
@@ -182,4 +177,6 @@ for i in range(0, len(patients)):
     print("PEARSON:"+str(pearsonCorrelation(a, patients[i])))
     print("\n")
 
-
+#TODO: order Patients based on similarity
+#TODO: for each patient return the therapy that can be done and the success rate
+#TODO: decide what to keep based on user similarity and success rate
