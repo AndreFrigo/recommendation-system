@@ -26,20 +26,33 @@ def createDataset(dataset):
             therapies = []
             diagnosed = condition["diagnosed"]
             cured = condition["cured"]
-            # print("Condition: "+str(condition["id"])+", diagnosed "+str(diagnosed)+", cured: "+str(cured))
             for t in trials:
                 succ = None
                 if (t["start"] > diagnosed and (cured == None or t["start"] < cured)):
                     if(t["condition"] == condition["id"]):
                         succ = t["successful"]
                     #the trial is done when the patient has that condition
-                    if(len(therapies)>0):
-                        tl = therapies[-1][0].copy()
-                        tl.append(t["therapy"])
-                        therapies.append([tl, succ])
-                    else:
-                        therapies.append([[t["therapy"]], succ])
+                    therapies.append([t["therapy"], succ, t["start"]])
+
             # print(condition["id"])
+            # print(therapies)
+            
+            #sort the therapies by their start date
+            therapies.sort(key=lambda x: x[2])
+            #store only yhe important values, I'm not interested on the date anymore, just the order
+            th = []
+            for i in range(0, len(therapies)):
+                th.append([therapies[i][0], therapies[i][1]])
+            # print(th)
+            #create all the possible groups of therapies, for example (th1, th2, th3) becomes ([th1], [th1,th2], [th1,th2,th3]) to store causality
+            therapies = []
+            for i in range(0, len(th)):
+                if(i==0):
+                    therapies.append([[th[0][0]], th[0][1]])
+                else:
+                    previous = [x for x in therapies[i-1][0]]
+                    previous.append(th[i][0])
+                    therapies.append([previous, th[i][1]])
             # print(therapies)
             ret[i][condition["id"]]=therapies
     return ret
@@ -67,15 +80,16 @@ def normalizePatient(patient):
 def pearsonCorrelation(el1, el2):
     #it is assumed that el1 and el2 are already normalized (for performance)
 
+
     pass
 
 #Read json dataset
 dataset = readJson()
 #Create patients list
 patients = createDataset(dataset)
-print(patients[0])
-a = normalizePatient(patients[0])
-print(a)
+# print(patients[0])
+# a = normalizePatient(patients[0])
+# print(a)
 
 # for i in range(0, len(patients)):
 #     print("PATIENT "+str(i))
