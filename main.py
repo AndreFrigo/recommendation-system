@@ -41,18 +41,18 @@ def createDataset(dataset):
             therapies.sort(key=lambda x: x[2])
             #store only yhe important values, I'm not interested on the date anymore, just the order
             th = []
-            for i in range(0, len(therapies)):
-                th.append([therapies[i][0], therapies[i][1]])
+            for j in range(0, len(therapies)):
+                th.append([therapies[j][0], therapies[j][1]])
             # print(th)
             #create all the possible groups of therapies, for example (th1, th2, th3) becomes ([th1], [th1,th2], [th1,th2,th3]) to store causality
             therapies = []
-            for i in range(0, len(th)):
-                if(i==0):
+            for j in range(0, len(th)):
+                if(j==0):
                     therapies.append([[th[0][0]], th[0][1]])
                 else:
-                    previous = [x for x in therapies[i-1][0]]
-                    previous.append(th[i][0])
-                    therapies.append([previous, th[i][1]])
+                    previous = [x for x in therapies[j-1][0]]
+                    previous.append(th[j][0])
+                    therapies.append([previous, th[j][1]])
             # print(therapies)
             ret[i][condition["id"]]=therapies
     return ret
@@ -87,9 +87,9 @@ def pearsonCorrelation(el1, el2):
 dataset = readJson()
 #Create patients list
 patients = createDataset(dataset)
-# print(patients[0])
-# a = normalizePatient(patients[0])
-# print(a)
+print(patients[3])
+a = normalizePatient(patients[3])
+print(a)
 
 # for i in range(0, len(patients)):
 #     print("PATIENT "+str(i))
