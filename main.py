@@ -1,5 +1,6 @@
 import json
 import copy
+import math
 
 #reads the json dataset and return a dictionary
 def readJson(filename='datasets/datasetB.json'):
@@ -54,7 +55,7 @@ def createDataset(dataset):
                     previous.append(th[j][0])
                     therapies.append([previous, th[j][1]])
             # print(therapies)
-            ret[i][condition["id"]]=therapies
+            ret[i][condition["kind"]]=therapies
     return ret
 
 #normalize a patient for similarity, the patient is a dictionary
@@ -67,8 +68,10 @@ def normalizePatient(patient):
             if(trial[1] != None):
                 tot += trial[1]
                 num += 1
-    
-    tot = tot/num
+    if(num!=0):
+        tot = tot/num
+    else:
+        tot=0
     # print("Tot: "+str(tot)+", num: "+str(num))
     for condition in ret:
         for trial in ret[condition]:
@@ -77,23 +80,70 @@ def normalizePatient(patient):
     return ret
 
 # calculates Pearson correlation 
-def pearsonCorrelation(el1, el2):
-    #it is assumed that el1 and el2 are already normalized (for performance)
-
-
-    pass
+# denominator1 is the partial denominator for the first element
+def pearsonCorrelation(el1, e2, denominator1=None):
+    #it is assumed that el1 is already normalized (for performance)
+    #normalize the second 
+    el2 = normalizePatient(e2)
+    numerator = 0
+    denominator = 1
+    partial = 0
+    common = {}
+    for condition in el1:
+        if (condition in el2):
+            # print("Condition in el2")
+            #el2 share some conditions with el1, check the therapies
+            th2 = [x[0] for x in el2[condition]]
+            for trial in el1[condition]:
+                if(trial[1] != None):
+                    if trial[0] in th2:
+                        t2 = el2[condition][th2.index(trial[0])][1]
+                        if(t2 != None):
+                            # print("Something in common")
+                            if condition in common:
+                                common[condition].append(trial[0])
+                            else:
+                                common[condition] = [trial[0]]
+                            #the same therapy list has been applied between the two
+                            numerator += trial[1]*t2
+        
+        #get the denumerator part for el1
+        if(denominator1 == None):
+            for trial in el1[condition]:
+                if (trial[1] != None):
+                    partial += math.pow(trial[1], 2)
+    if (partial == 0):
+        partial = 1
+    # print("Partial1 for el1: "+str(partial))
+    if(denominator1 == None):
+        denominator = denominator * math.sqrt(partial)
+    elif denominator1 != 0:
+        denominator = denominator * denominator1
+    #get the denominator part for el2
+    partial = 0
+    for condition in el2:
+        for trial in el2[condition]:
+            if (trial[1] != None):
+                partial += math.pow(trial[1], 2)
+    if(partial == 0):
+        partial = 1
+    # print("Partial1 for el2: "+str(partial))
+    denominator = denominator * math.sqrt(partial)
+    return numerator/denominator
+    
 
 #Read json dataset
 dataset = readJson()
 #Create patients list
 patients = createDataset(dataset)
-print(patients[3])
+# print(patients[3])
 a = normalizePatient(patients[3])
-print(a)
+# print(a)
 
-# for i in range(0, len(patients)):
-#     print("PATIENT "+str(i))
-#     print(patients[i])
-#     print("\n")
+
+for i in range(0, len(patients)):
+    print("PATIENT "+str(i))
+    print("PEARSON:"+str(pearsonCorrelation(patients[3], patients[i])))
+    print("\n")
 
 
