@@ -80,14 +80,41 @@ def normalizePatient(patient):
     return ret
 
 #longest common subsequence between two lists
-def lcs_length(a, b):
-    table = [[0] * (len(b) + 1) for _ in range(len(a) + 1)]
-    for i, ca in enumerate(a, 1):
-        for j, cb in enumerate(b, 1):
-            table[i][j] = (
-                table[i - 1][j - 1] + 1 if ca == cb else
-                max(table[i][j - 1], table[i - 1][j]))
-    return table[-1][-1]
+#if getList == False it returns just the length of the lcs, otherwise it returns the list of lcs
+def lcs(a, b, getList = False):
+    a_len = len(a)
+    b_len = len(b)
+    dp = []
+    for i in range(a_len + 1):
+        dp.append([0 for j in range(b_len + 1)])
+    for i in range(1, a_len + 1):
+        for j in range(1, b_len + 1):
+            if a[i - 1] == b[j - 1]:
+                dp[i][j] = dp[i - 1][j - 1] + 1
+            else:
+                dp[i][j] = max(dp[i-1][j], dp[i][j - 1])
+    max_length = dp[a_len][b_len]
+    if(getList == False):
+        return max_length
+    else:
+        return lcs_list(a, b, dp, a_len, b_len)
+
+#function needed inside lcs
+def lcs_list(a, b, dp, i, j):
+    if i == 0 or j == 0:
+        return []
+    if a[i-1] == b[j-1]:
+        ret = lcs_list(a, b, dp, i-1, j-1)
+        ret.append(a[i-1])
+        return ret
+    else:
+        if dp[i-1][j] > dp[i][j-1]:
+            ret = lcs_list(a, b, dp, i-1, j)
+            return ret
+        else:
+            ret = lcs_list(a, b, dp, i, j-1)
+            return ret
+
 
 #compare one sequence of trials (list trial) of one patient with all the sequences of trials for one specific condition of an other patient
 #based on LCS to keep the order information, normalized over the length of the longest element between the two trials of the patients
@@ -102,7 +129,7 @@ def compareTrials(trial1, condition2):
     for elem in condition2:
         if (elem[0][-1] == last):
             #they have the same final therapy applied, so check the similarity (that will be non-zero)
-            sim = lcs_length(trial1, elem[0])
+            sim = lcs(trial1, elem[0])
             if(sim > similarity[0] and elem[1] != None):
                 #if it is more similar then the others and the success rate is defined, store both the values
                 similarity[0] = sim
