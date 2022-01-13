@@ -129,10 +129,10 @@ def pearsonCorrelation(el1, e2):
             # th2 = [x[0] for x in el2[condition]]
             for trial in el1[condition]:
                 if(trial[1] != None):
-                    print("FOR CONDITION: "+str(condition)+" AND TRIAL FOR EL1: "+str(trial))
-                    print("COMPARE WITH "+str(el2[condition]))
+                    # print("FOR CONDITION: "+str(condition)+" AND TRIAL FOR EL1: "+str(trial))
+                    # print("COMPARE WITH "+str(el2[condition]))
                     sim = compareTrials(trial[0], el2[condition])
-                    print(sim)
+                    # print(sim)
                     if sim[0] != 0:
                         if condition in common:
                             common[condition].append(trial[0])
@@ -162,20 +162,25 @@ def pearsonCorrelation(el1, e2):
     denominator = denominator * math.sqrt(partial)
     return numerator/denominator
     
+#compare the patient with ID:patientID with all the other patients, 
+#return a list of tuples (patient id, similarity value) ordered in decreasing order by the similarity value [-1;1]
+def similarPatients(patientID, patients):
+    similarPatients = []
+    p = normalizePatient(patients[patientID])
+    for i in range(0, len(patients)):
+        if(i!=patientID):
+            sim = pearsonCorrelation(p, patients[i])
+            similarPatients.append((i, sim))
+    return sorted(similarPatients, key=lambda x: x[1], reverse=True)
 
 #Read json dataset
 dataset = readJson()
 #Create patients list
 patients = createDataset(dataset)
 # print(patients[3])
-a = normalizePatient(patients[3])
-# print(a)
+#compare with the other patients and get an ordered list of patients based on similarity
+sim = similarPatients(3, patients)
 
-
-for i in range(0, len(patients)):
-    print("PATIENT "+str(i))
-    print("PEARSON:"+str(pearsonCorrelation(a, patients[i])))
-    print("\n")
 
 #TODO: order Patients based on similarity
 #TODO: for each patient return the therapy that can be done and the success rate
