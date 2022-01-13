@@ -182,6 +182,5 @@ patients = createDataset(dataset)
 sim = similarPatients(3, patients)
 
 
-#TODO: order Patients based on similarity
 #TODO: for each patient return the therapy that can be done and the success rate
 #TODO: decide what to keep based on user similarity and success rate
