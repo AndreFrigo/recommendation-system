@@ -80,8 +80,8 @@ def normalizePatient(patient):
     return ret
 
 #longest common subsequence between two lists
-#if getList == False it returns just the length of the lcs, otherwise it returns the list of lcs
-def lcs(a, b, getList = False):
+#if getList == False it returns just the length of the lcs. otherwise it returns the list of lcs, if getBoth == True it returns both
+def lcs(a, b, getList = False, getBoth = False):
     a_len = len(a)
     b_len = len(b)
     dp = []
@@ -94,10 +94,13 @@ def lcs(a, b, getList = False):
             else:
                 dp[i][j] = max(dp[i-1][j], dp[i][j - 1])
     max_length = dp[a_len][b_len]
-    if(getList == False):
-        return max_length
+    if(getBoth == False):
+        if(getList == False):
+            return max_length
+        else:
+            return lcs_list(a, b, dp, a_len, b_len)
     else:
-        return lcs_list(a, b, dp, a_len, b_len)
+        return(max_length, lcs_list(a, b, dp, a_len, b_len))
 
 #function needed inside lcs
 def lcs_list(a, b, dp, i, j):
@@ -200,14 +203,81 @@ def similarPatients(patientID, patients):
             similarPatients.append((i, sim))
     return sorted(similarPatients, key=lambda x: x[1], reverse=True)
 
+
+#suggest the therapy to take in order to try to solve the condition
+#input: therapyList (list of therapies done trying to solve the condition), condition (the condition id), patient2 (the patient to use to guess the therapy)
+#returns a tuple (therapy, success), where therapy is the therapy id and success the success rate for that therapy (considering the previous therapies done)
+def suggestTherapy(therapyList, condition, patient2):
+    #list of trials done by patient2 to try to solve the condition
+    tl = patient2[condition]
+    #get the last element and check if the successfull rate is known
+    l = len(tl)
+    stop = False
+    while(l >= 0 and stop == False):
+        l -= 1
+        #in case of no therapies applied the list is empty, in this case return None
+        try:
+            succ = tl[l][1]
+        except:
+            return (None, None)
+        if(succ != None):
+            stop = True
+    #tl[l] contains one list of trials with the last success rate != None
+    while (stop == True):
+        # l contains the index of the last meaningful set of trials
+        # compare the trials made by the two patients
+        numTrials = len(tl[l][0])
+        if (numTrials > 1):
+            #The doctor can suggest just one therapy to take
+            common = lcs(therapyList, tl[l][0], getBoth=True)
+            if(numTrials - common[0] == 1):
+                #it has to be as following: COMMON_THERAPIES, THx
+                #where COMMON_THERAPIES are the therapies that both patients had in the same order and THx is the therapy that patient2 did after the therapies in common
+                ok = True
+                for i in range(0, numTrials):
+                    if(i != numTrials-1):
+                        #check if the therapies are the same
+                        if(tl[l][0][i] != therapyList[i]):
+                            ok = False
+                    else:
+                        #found the therapy, return its id and success rate
+                        if (ok==True):
+                            return (tl[l][0][i], tl[l][1])
+                        else:
+                            return (None, None)
+                # return (tl[l][0], tl[l][1])
+            else:
+                #look for the trial before
+                if(l==0):
+                    return (None, None)
+                l -= 1
+            
+        else:
+            #numTrials = 1
+            #just suggest the therapy taken 
+            return (tl[l][0], tl[l][1])
+
+
+
+
+
 #Read json dataset
 dataset = readJson()
 #Create patients list
 patients = createDataset(dataset)
-# print(patients[3])
 #compare with the other patients and get an ordered list of patients based on similarity
-sim = similarPatients(3, patients)
 
 
-#TODO: for each patient return the therapy that can be done and the success rate
+
+#first test case, Patient 6, condition 248
+sim = similarPatients(6, patients)
 #TODO: decide what to keep based on user similarity and success rate
+
+#just an example with all the patients similar (similarity>0) to Pat6 and having Cond248
+ths = patients[6]["Cond248"][-1][0]
+for elem in sim:
+    if(elem[1]>0):
+        pid = elem[0]
+        if("Cond248" in patients[pid]):
+            print("Patient "+str(pid)+", similarity: "+str(elem[1])+", Suggested therapy: "+str(suggestTherapy(ths, "Cond248", patients[pid])))
+
