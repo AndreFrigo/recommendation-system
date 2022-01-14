@@ -35,9 +35,6 @@ def createDataset(dataset):
                     #the trial is done when the patient has that condition
                     therapies.append([t["therapy"], succ, t["start"]])
 
-            # print(condition["id"])
-            # print(therapies)
-            
             #sort the therapies by their start date
             therapies.sort(key=lambda x: x[2])
             #store only yhe important values, I'm not interested on the date anymore, just the order
@@ -72,7 +69,6 @@ def normalizePatient(patient):
         tot = tot/num
     else:
         tot=0
-    # print("Tot: "+str(tot)+", num: "+str(num))
     for condition in ret:
         for trial in ret[condition]:
             if(trial[1] != None):
@@ -80,7 +76,7 @@ def normalizePatient(patient):
     return ret
 
 #longest common subsequence between two lists
-#if getList == False it returns just the length of the lcs. otherwise it returns the list of lcs, if getBoth == True it returns both
+#if getList == False it returns just the length of the lcs, otherwise it returns the list of lcs, if getBoth == True it returns both
 def lcs(a, b, getList = False, getBoth = False):
     a_len = len(a)
     b_len = len(b)
@@ -119,9 +115,9 @@ def lcs_list(a, b, dp, i, j):
             return ret
 
 
-#compare one sequence of trials (list trial) of one patient with all the sequences of trials for one specific condition of an other patient
+#compare one sequence of trials (trial1) of one patient with all the sequences of trials for one specific condition of an other patient
 #based on LCS to keep the order information, normalized over the length of the longest element between the two trials of the patients
-#returns the success rate of the second patient for the most similar trial and the similarity value
+#returns the similarity value and the success rate of the second patient for the most similar trial 
 #makes the comparison only if the last therapy is the same for both, otherwise the value for that comparison is 0, this is because of how the different trials lists are made
 def compareTrials(trial1, condition2):
     #trial1 is supposed to be a list containing only therapies (es. [th1, th2, th3], es2. [th1])
@@ -219,7 +215,7 @@ def suggestTherapy(therapyList, condition, patient2):
         try:
             succ = tl[l][1]
         except:
-            return (None, None)
+            return None
         if(succ != None):
             stop = True
     #tl[l] contains one list of trials with the last success rate != None
@@ -242,22 +238,64 @@ def suggestTherapy(therapyList, condition, patient2):
                     else:
                         #found the therapy, return its id and success rate
                         if (ok==True):
-                            return (tl[l][0][i], tl[l][1])
+                            if(tl[l][1] != None):
+                                return (tl[l][0][i], tl[l][1])
+                            else:
+                                return None
                         else:
-                            return (None, None)
+                            return None
                 # return (tl[l][0], tl[l][1])
             else:
                 #look for the trial before
                 if(l==0):
-                    return (None, None)
+                    return None
                 l -= 1
             
         else:
-            #numTrials = 1
-            #just suggest the therapy taken 
-            return (tl[l][0], tl[l][1])
+            #numTrials = 1, just suggest the therapy taken 
+            if(tl[l][1] != None):
+                return (tl[l][0][0], tl[l][1])
+            else: 
+                return None
+    return None
+
+#function used inside therapyList
+# gives the score for a specific tuple (User similarity, therapy suggested, success rate) to decide which therapies to use
+def scoreSuggestion(suggestion):
+    #It is used the successRate in the interval [0,1] and the userSimilarity in the interval [-1,1]
+    userSimilarity = suggestion[0]
+    successRate = suggestion[2]/100
+    return 0.25*userSimilarity + 0.75*successRate
 
 
+
+#given all the patients, one patient id and condition id, get the list of possible therapies to apply, with the success rate and user similarity
+#return (User similarity, therapy suggested, success rate)
+def therapyList(patients, patientID, conditionID):
+    #patients ordered by similarity, each element is (patient id, similarity value)
+    sim = similarPatients(patientID, patients)
+    #ordered list of all the therapies done by that user for that specific condition
+    therapies = patients[patientID][conditionID][-1][0]
+    #list of therapy to suggest
+    tl = []
+    i=0
+    for elem in sim:
+        pid = elem[0]
+        if (conditionID in patients[pid]):
+            th = suggestTherapy(therapies, conditionID, patients[pid])
+            if(th != None):
+                tl.append((elem[1], th[0], th[1]))
+    
+    #sort the therapies based on user similarity and success rate
+    completeList = sorted(tl, key=scoreSuggestion, reverse=True)
+    # return [x[1] for x in completeList[:5]]
+    # return the first 5 therapyIDs (no duplicates)
+    ret = []
+    while(len(ret)<5 and i<len(completeList)):
+        if(completeList[i][1] not in ret):
+            ret.append(completeList[i][1])
+        i+=1
+    return ret
 
 
 
@@ -269,15 +307,5 @@ patients = createDataset(dataset)
 
 
 
-#first test case, Patient 6, condition 248
-sim = similarPatients(6, patients)
-#TODO: decide what to keep based on user similarity and success rate
-
-#just an example with all the patients similar (similarity>0) to Pat6 and having Cond248
-ths = patients[6]["Cond248"][-1][0]
-for elem in sim:
-    if(elem[1]>0):
-        pid = elem[0]
-        if("Cond248" in patients[pid]):
-            print("Patient "+str(pid)+", similarity: "+str(elem[1])+", Suggested therapy: "+str(suggestTherapy(ths, "Cond248", patients[pid])))
-
+# #first test case, Patient 6, condition 248
+print(therapyList(patients, 6, "Cond248"))
