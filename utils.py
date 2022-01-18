@@ -261,21 +261,23 @@ def suggestTherapy(therapyList, condition, patient2):
 
 #function used inside therapyList
 # gives the score for a specific tuple (User similarity, therapy suggested, success rate) to decide which therapies to use
-def scoreSuggestion(suggestion):
+def scoreSuggestion(suggestion, sim, succ):
     #It is used the successRate in the interval [0,1] and the userSimilarity in the interval [-1,1]
     userSimilarity = suggestion[0]
     successRate = suggestion[2]/100
-    return 0.25*userSimilarity + 0.75*successRate
+    # return 0.25*userSimilarity + 0.75*successRate
+    return sim*userSimilarity + succ*successRate
 
 
 
 #given all the patients, one patient id and condition id, get the list of possible therapies to apply, with the success rate and user similarity
+#optional arguments: simScore score for user similarity, succScore: score for succession rate (simScore + succScore = 1)
 #return (User similarity, therapy suggested, success rate)
-def therapyList(patients, patientID, conditionID):
+def therapyList(patients, patientID, conditionID, simScore = 0.25, succScore = 0.75):
     #patients ordered by similarity, each element is (patient id, similarity value)
     sim = similarPatients(patientID, patients)
     #ordered list of all the therapies done by that user for that specific condition
-    therapies = patients[patientID][conditionID][-1][0]
+    therapies = patients[patientID][conditionID][-1][0] if len(patients[patientID][conditionID]) > 0 else []
     #list of therapy to suggest
     tl = []
     i=0
@@ -287,12 +289,12 @@ def therapyList(patients, patientID, conditionID):
                 tl.append((elem[1], th[0], th[1]))
     
     #sort the therapies based on user similarity and success rate
-    completeList = sorted(tl, key=scoreSuggestion, reverse=True)
+    completeList = sorted(tl, key=lambda x: scoreSuggestion(x, simScore, succScore), reverse=True)
     # return [x[1] for x in completeList[:5]]
     # return the first 5 therapyIDs (no duplicates)
     ret = []
     while(len(ret)<5 and i<len(completeList)):
-        if(completeList[i][1] not in ret):
-            ret.append(completeList[i][1])
+        if(completeList[i] not in ret):
+            ret.append(completeList[i])
         i+=1
     return ret
