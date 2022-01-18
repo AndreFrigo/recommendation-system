@@ -273,7 +273,7 @@ def scoreSuggestion(suggestion, sim, succ):
 #given all the patients, one patient id and condition id, get the list of possible therapies to apply, with the success rate and user similarity
 #optional arguments: simScore score for user similarity, succScore: score for succession rate (simScore + succScore = 1)
 #return (User similarity, therapy suggested, success rate)
-def therapyList(patients, patientID, conditionID, simScore = 0.25, succScore = 0.75):
+def therapyList(patients, patientID, conditionID, simScore = 0.3, succScore = 0.7):
     #patients ordered by similarity, each element is (patient id, similarity value)
     sim = similarPatients(patientID, patients)
     #ordered list of all the therapies done by that user for that specific condition

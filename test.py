@@ -5,7 +5,7 @@ import copy
 ##test
 #remove one therapy T from patient P and condition C, then try to guess the therapy
 #optional arguments: simScore score for user similarity, succScore: score for succession rate (simScore + succScore = 1), seed: seed for random function
-def test(patients, numTests, simScore = 0.25, succScore = 0.75, seed = None):
+def test(patients, numTests, simScore = 0.3, succScore = 0.7, seed = None):
     if(seed != None):
         random.seed(seed)
 

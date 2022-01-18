@@ -16,13 +16,13 @@ print("2")
 # print(therapyList(patients, 6, "Cond248"))
 # print("3")
 
-scores = [(0.2, 0.8), (0.4, 0.6), (0.6, 0.4), (0.8, 0.2)]
+scores = [(0.3, 0.7), (0.35, 0.65), (0.45, 0.55), (0.5, 0.5)]
 res = []
 for elem in scores:
     print("Test with scores: "+str(elem))
-    t1 = test(patients, 100, elem[0], elem[1], seed=5)
-    t2 = test(patients, 100, elem[0], elem[1], seed=10)
-    t3 = test(patients, 100, elem[0], elem[1], seed=15)
+    t1 = test(patients, 50, elem[0], elem[1], seed=5)
+    t2 = test(patients, 50, elem[0], elem[1], seed=10)
+    t3 = test(patients, 50, elem[0], elem[1], seed=15)
     res.append((elem, (t1+t2+t3)/3))
 
 print("RES: "+str(res))
