@@ -29,7 +29,7 @@ def createDataset(dataset):
             cured = condition["cured"]
             for t in trials:
                 succ = None
-                if (t["start"] > diagnosed and (cured == None or t["start"] < cured)):
+                if (t["start"] > diagnosed and (cured == None or cured == "NULL" or t["start"] < cured)):
                     if(t["condition"] == condition["id"]):
                         succ = t["successful"]
                     #the trial is done when the patient has that condition

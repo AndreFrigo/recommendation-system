@@ -8,15 +8,11 @@ import copy
 def test(patients, numTests, simScore = 0.3, succScore = 0.7, seed = None):
     if(seed != None):
         random.seed(seed)
-
-    #2: 14/100
-    score = 0
-    num = 0
     i = 0
     correct = 0
     while (i<numTests):
         #select a random patient
-        pid = random.randint(0, len(patients))
+        pid = random.randint(0, len(patients)-1)
         #select a random condition for that patient
         if(len(patients[pid]) > 0):
             cond = random.choice([elem for elem in patients[pid]])
@@ -25,34 +21,15 @@ def test(patients, numTests, simScore = 0.3, succScore = 0.7, seed = None):
                 elem = patients[pid][cond][-1]
                 if(elem[1] == 100):
                     print("TEST: EXECUTION "+str(i))
-                    print("PatientID: "+str(pid)+", condition: "+str(cond)+", therapies done: "+str(patients[pid][cond]))
-                    print("Removing "+str(elem))
+                    # print("PatientID: "+str(pid)+", condition: "+str(cond)+", therapies done: "+str(patients[pid][cond]))
                     patients[pid][cond].remove(elem)
                     tl = therapyList(patients, pid, cond, simScore, succScore)
-                    print("Predicted: "+str([e[1] for e in tl]))
-                    oldnum = num
                     for ti in range(0, len(tl)):
                         # print("Checking "+str(tl[ti][1]+" with "+str(elem[0][-1])))
                         if(tl[ti][1] == elem[0][-1]):
-                            #the therapy correct therapy is inside the 5 suggested
-                            #the score is: position number * |actual success - predicted success| 
-                            #the objective is minimizing this value (predicting the wrong therapy gives the max value= 5*100),
-                            #predicting the right therapy as first is better because the factor is lower
-                            #TODO
-                            # score += abs(tl[ti][2] - elem[1]) * ti
-                            score += ti
-                            num += 1
+                            #the correct therapy is inside the 5 suggested
                             correct += 1
-                            print("OK: pos: "+str(ti)+", error: "+str(abs(tl[ti][2] - elem[1])))
-                    if (oldnum == num):
-                        #the correct therapy has not been predicted
-                        #score += 500
-                        #TODO
-                        score += 10
-                        num += 1
-                        print("WRONG")
                     patients[pid][cond].append(elem)
-                    print("\n----------------------------------------------------------------------------------------------------------------\n")
                 else:
                     i -= 1
             else:

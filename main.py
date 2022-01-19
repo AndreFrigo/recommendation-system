@@ -8,6 +8,12 @@ def getTherapyName(dataset, therapyID):
         if(e["id"] == therapyID):
             return e["name"]
 
+#in the data structure are used the conditions kind, but input is condition id, this function gives the condition kind given the condition id
+def getConditionKind(dataset, conditionID):
+    for p in dataset["Patients"]:
+        for c in p["conditions"]:
+            if ( c["id"] == conditionID):
+                return c["kind"]
 
 if(len(sys.argv) == 4):
     inputDataset = str(sys.argv[1])
@@ -21,15 +27,19 @@ if(len(sys.argv) == 4):
     #Create patients list
     patients = createDataset(dataset)
     # print("Done creating data structure")
+
+    #find the condition kind from the condition id
+    cond = getConditionKind(dataset, inputCondition)
     #compare with the other patients and get an ordered list of patients based on similarity
-    tl = therapyList(patients, inputPatient, inputCondition)
+    tl = therapyList(patients, inputPatient, cond)
     #create the list to print
     ret = [(e[1], getTherapyName(dataset, e[1])) for e in tl]
-    print(ret)
+    print("INPUT: "+str(inputPatient)+" "+str(inputCondition))
+    print("OUTPUT: "+str(ret))
 
     
-    #This is how to test
-    # scores = [(0.3, 0.7), (0.35, 0.65), (0.45, 0.55), (0.5, 0.5)]
+    # #This is how to test
+    # scores = [(0.3, 0.7)]
     # res = []
     # for elem in scores:
     #     print("Test with scores: "+str(elem))
