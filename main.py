@@ -1,5 +1,5 @@
 from utils import readJson, createDataset, therapyList
-from test import test
+# from test import test
 import sys
 
 #get therapy name given input dataset and therapy ID
