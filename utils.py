@@ -3,7 +3,7 @@ import copy
 import math
 
 #reads the json dataset and return a dictionary
-def readJson(filename='datasets/datasetB.json'):
+def readJson(filename):
     f = open(filename)
     return json.load(f)
 
