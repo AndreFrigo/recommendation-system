@@ -1,7 +1,7 @@
 # recommendation-system
 Data Mining project 2021-2022
 
-To execute:
+To execute it is needed Python version 3.8.10, run the following command inside the recommendation-system folder:
 python main.py dataset.json patientID conditionID
 Where:
 - dataset.json is the json dataset containing therapies, conditions and patients
