@@ -41,7 +41,6 @@ def createDataset(dataset):
             th = []
             for j in range(0, len(therapies)):
                 th.append([therapies[j][0], therapies[j][1]])
-            # print(th)
             #create all the possible groups of therapies, for example (th1, th2, th3) becomes ([th1], [th1,th2], [th1,th2,th3]) to store causality
             therapies = []
             for j in range(0, len(th)):
@@ -51,7 +50,6 @@ def createDataset(dataset):
                     previous = [x for x in therapies[j-1][0]]
                     previous.append(th[j][0])
                     therapies.append([previous, th[j][1]])
-            # print(therapies)
             ret[i][condition["kind"]]=therapies
     return ret
 
@@ -150,22 +148,16 @@ def pearsonCorrelation(el1, e2):
     common = {}
     for condition in el1:
         if (condition in el2):
-            # print("Condition in el2")
             # el2 share some conditions with el1, check the therapies
-            # th2 = [x[0] for x in el2[condition]]
             for trial in el1[condition]:
                 if(trial[1] != None):
-                    # print("FOR CONDITION: "+str(condition)+" AND TRIAL FOR EL1: "+str(trial))
-                    # print("COMPARE WITH "+str(el2[condition]))
                     sim = compareTrials(trial[0], el2[condition])
-                    # print(sim)
                     if sim[0] != 0:
                         if condition in common:
                             common[condition].append(trial[0])
                         else:
                             common[condition] = [trial[0]]
                         #the same therapy list has been applied between the two
-                        #TODO: take in consideration the similarity rate
                         numerator += trial[1]*sim[1]*sim[0]
             #also the denominator is calculated considering ONLY common conditions
             #get the denumerator part for el1
@@ -244,7 +236,6 @@ def suggestTherapy(therapyList, condition, patient2):
                                 return None
                         else:
                             return None
-                # return (tl[l][0], tl[l][1])
             else:
                 #look for the trial before
                 if(l==0):
@@ -265,7 +256,6 @@ def scoreSuggestion(suggestion, sim, succ):
     #It is used the successRate in the interval [0,1] and the userSimilarity in the interval [-1,1]
     userSimilarity = suggestion[0]
     successRate = suggestion[2]/100
-    # return 0.25*userSimilarity + 0.75*successRate
     return sim*userSimilarity + succ*successRate
 
 
@@ -290,7 +280,6 @@ def therapyList(patients, patientID, conditionID, simScore = 0.3, succScore = 0.
     
     #sort the therapies based on user similarity and success rate
     completeList = sorted(tl, key=lambda x: scoreSuggestion(x, simScore, succScore), reverse=True)
-    # return [x[1] for x in completeList[:5]]
     # return the first 5 therapyIDs (no duplicates)
     ret = []
     while(len(ret)<5 and i<len(completeList)):
